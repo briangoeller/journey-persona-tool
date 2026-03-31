@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Persona Prompt Generator · Journey-Anchored Customer Experience Framework</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0d1f3c;
+    --navy-mid: #1a3260;
+    --navy-light: #243f7a;
+    --gold: #e8a020;
+    --gold-light: #f5c048;
+    --gold-pale: #fdf3dc;
+    --white: #ffffff;
+    --off-white: #f7f8fa;
+    --slate: #8a97b0;
+    --slate-light: #c8d0df;
+    --text: #1a2640;
+    --text-light: #4a5a78;
+    --border: #dde3ee;
+    --success: #2d7d4f;
+    --tier-s-bg: #e8f0fe; --tier-s-fg: #2d5bb9;
+    --tier-r-bg: #e6f4ea; --tier-r-fg: #2d7d4f;
+    --tier-d-bg: #fef3e2; --tier-d-fg: #a05c00;
+    --shadow-sm: 0 1px 3px rgba(13,31,60,0.08);
+    --shadow-md: 0 4px 16px rgba(13,31,60,0.10), 0 2px 6px rgba(13,31,60,0.06);
+    --shadow-lg: 0 12px 40px rgba(13,31,60,0.14);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--off-white); color: var(--text); min-height: 100vh; }
+
+  /* ── Header ── */
+  .header {
+    background: var(--navy);
+    padding: 24px 48px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 3px solid var(--gold);
+  }
+  .header-brand { display: flex; flex-direction: column; gap: 3px; }
+  .header-brand .title {
+    font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 600;
+    color: var(--white); letter-spacing: 0.01em;
+  }
+  .header-brand .subtitle { font-size: 12px; color: var(--slate); letter-spacing: 0.05em; }
+  .header-meta { display: flex; align-items: center; gap: 10px; }
+  .version-badge {
+    font-family: 'DM Mono', monospace; font-size: 11px; color: var(--gold);
+    border: 1px solid var(--gold); padding: 3px 9px; border-radius: 2px;
+    letter-spacing: 0.08em; opacity: 0.85;
+  }
+  .oss-badge {
+    font-family: 'DM Mono', monospace; font-size: 11px; color: var(--slate);
+    border: 1px solid var(--navy-light); padding: 3px 9px; border-radius: 2px;
+    letter-spacing: 0.08em;
+  }
+
+  /* ── Main layout ── */
+  .main { max-width: 980px; margin: 0 auto; padding: 40px 32px 80px; }
+
+  /* ── Config section ── */
+  .config-section {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+    margin-bottom: 32px;
+  }
+  .config-header {
+    background: var(--navy-mid);
+    padding: 14px 28px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .config-header h2 {
+    font-size: 12px; font-weight: 600; color: var(--white);
+    letter-spacing: 0.1em; text-transform: uppercase;
+  }
+  .config-header .config-note {
+    font-size: 11px; color: var(--slate); margin-left: auto; font-style: italic;
+  }
+  .config-body { padding: 24px 28px; }
+
+  /* Preset cards */
+  .preset-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+    margin-bottom: 24px;
+  }
+  .preset-card {
+    cursor: pointer;
+    border: 2px solid var(--border);
+    border-radius: 5px;
+    padding: 14px 12px;
+    text-align: center;
+    transition: all 0.15s;
+    background: var(--white);
+  }
+  .preset-card:hover { border-color: var(--navy-light); background: var(--off-white); }
+  .preset-card.active { border-color: var(--gold); background: var(--gold-pale); }
+  .preset-icon { font-size: 22px; display: block; margin-bottom: 6px; }
+  .preset-label { font-size: 13px; font-weight: 600; color: var(--navy); display: block; }
+  .preset-sub { font-size: 10px; color: var(--slate); margin-top: 3px; display: block; }
+  .preset-card.active .preset-label { color: var(--navy); }
+
+  /* Org fields */
+  .org-fields { margin-bottom: 22px; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 14px; }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label {
+    font-size: 11px; font-weight: 600; color: var(--text-light);
+    letter-spacing: 0.07em; text-transform: uppercase;
+  }
+  .field input[type="text"], .field textarea, .field select {
+    font-family: 'DM Sans', sans-serif; font-size: 13.5px; color: var(--text);
+    background: var(--white); border: 1.5px solid var(--border);
+    border-radius: 4px; padding: 9px 13px; transition: border-color 0.15s;
+    appearance: none; -webkit-appearance: none;
+  }
+  .field select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238a97b0' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 13px center;
+    padding-right: 34px; cursor: pointer;
+  }
+  .field input[type="text"]:focus, .field textarea:focus, .field select:focus {
+    outline: none; border-color: var(--navy-light);
+    box-shadow: 0 0 0 3px rgba(26,50,96,0.08);
+  }
+  .field textarea { resize: vertical; min-height: 68px; line-height: 1.55; }
+
+  /* Tier definition cards */
+  .tier-def-label {
+    font-size: 11px; font-weight: 600; color: var(--text-light);
+    letter-spacing: 0.07em; text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .tier-def-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .tier-def-card { border-radius: 5px; overflow: hidden; border: 1px solid var(--border); }
+  .tier-def-head {
+    padding: 10px 14px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .tier-def-head.t0 { background: var(--tier-s-bg); }
+  .tier-def-head.t1 { background: var(--tier-r-bg); }
+  .tier-def-head.t2 { background: var(--tier-d-bg); }
+  .tier-name-input {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px; font-weight: 600;
+    border: none; background: transparent; width: 100%;
+    padding: 0; outline: none;
+  }
+  .tier-name-input.t0 { color: var(--tier-s-fg); }
+  .tier-name-input.t1 { color: var(--tier-r-fg); }
+  .tier-name-input.t2 { color: var(--tier-d-fg); }
+  .tier-def-body { padding: 10px 14px; background: var(--white); }
+  .tier-def-body textarea {
+    font-family: 'DM Sans', sans-serif; font-size: 12px; color: var(--text-light);
+    border: none; background: transparent; width: 100%;
+    resize: none; min-height: 72px; line-height: 1.5; outline: none; padding: 0;
+  }
+  .tier-def-body textarea:focus { color: var(--text); }
+
+  /* ── Divider ── */
+  .section-divider {
+    display: flex; align-items: center; gap: 16px;
+    margin-bottom: 24px; color: var(--slate);
+    font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+  }
+  .section-divider::before, .section-divider::after {
+    content: ''; flex: 1; height: 1px; background: var(--border);
+  }
+
+  /* ── Generator card ── */
+  .form-card {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: 6px; box-shadow: var(--shadow-md); overflow: hidden;
+  }
+  .step-header {
+    background: var(--navy); padding: 13px 28px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .step-header .step {
+    width: 22px; height: 22px; background: var(--gold); color: var(--navy);
+    border-radius: 50%; font-size: 11px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; font-family: 'DM Mono', monospace;
+  }
+  .step-header h2 {
+    font-size: 12px; font-weight: 600; color: var(--white);
+    letter-spacing: 0.08em; text-transform: uppercase;
+  }
+  .step-body { padding: 24px 28px; border-bottom: 1px solid var(--border); }
+  .step-body:last-of-type { border-bottom: none; }
+
+  /* Archetype grid */
+  .archetype-grid {
+    display: flex; flex-wrap: wrap; gap: 8px;
+  }
+  .archetype-card {
+    cursor: pointer; border: 2px solid var(--border);
+    border-radius: 4px; padding: 12px 10px;
+    text-align: center; transition: all 0.15s; background: var(--white);
+    position: relative; min-width: 110px; flex: 1;
+  }
+  .archetype-card:hover { border-color: var(--navy-light); background: var(--off-white); }
+  .archetype-card.selected { border-color: var(--gold); background: var(--gold-pale); }
+  .archetype-card input[type="radio"] { position: absolute; opacity: 0; width: 0; height: 0; }
+  .arch-code { font-family: 'DM Mono', monospace; font-size: 16px; font-weight: 500; color: var(--navy); display: block; margin-bottom: 5px; }
+  .arch-tier-badge {
+    font-size: 9px; font-weight: 600; letter-spacing: 0.08em;
+    text-transform: uppercase; padding: 2px 7px; border-radius: 2px;
+    display: inline-block; margin-bottom: 5px;
+  }
+  .t0-badge { background: var(--tier-s-bg); color: var(--tier-s-fg); }
+  .t1-badge { background: var(--tier-r-bg); color: var(--tier-r-fg); }
+  .t2-badge { background: var(--tier-d-bg); color: var(--tier-d-fg); }
+  .arch-friendly { font-size: 11px; font-weight: 600; color: var(--navy); display: block; margin-bottom: 4px; line-height: 1.2; }
+  .arch-age { font-size: 10px; color: var(--slate); display: block; margin-bottom: 4px; }
+  .arch-desc { font-size: 10px; color: var(--text-light); line-height: 1.4; display: block; }
+
+  /* Journey selector */
+  .journey-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .journey-pill {
+    cursor: pointer; border: 1.5px solid var(--border);
+    border-radius: 20px; padding: 6px 14px;
+    font-size: 13px; color: var(--text-light); background: var(--white);
+    transition: all 0.15s; user-select: none;
+  }
+  .journey-pill:hover { border-color: var(--navy-light); color: var(--navy); }
+  .journey-pill.selected { border-color: var(--navy); background: var(--navy); color: var(--white); }
+  .journey-pill.custom-pill { border-style: dashed; }
+  .custom-journey-wrap { display: none; margin-top: 10px; }
+  .custom-journey-wrap.visible { display: block; }
+  .custom-journey-wrap input {
+    font-family: 'DM Sans', sans-serif; font-size: 13.5px; color: var(--text);
+    border: 1.5px solid var(--navy-light); border-radius: 4px;
+    padding: 8px 13px; width: 100%;
+  }
+  .custom-journey-wrap input:focus { outline: none; box-shadow: 0 0 0 3px rgba(26,50,96,0.08); }
+
+  /* Stage hints */
+  .hint-text { font-size: 11px; color: var(--slate); font-style: italic; margin-top: 4px; }
+  .stage-hints { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .stage-hint {
+    cursor: pointer; background: var(--off-white);
+    border: 1px solid var(--border); border-radius: 3px;
+    padding: 4px 10px; font-size: 11px; color: var(--slate);
+    font-family: 'DM Mono', monospace; transition: all 0.12s;
+  }
+  .stage-hint:hover { background: var(--gold-pale); border-color: var(--gold); color: var(--text); }
+
+  /* Generate row */
+  .generate-row {
+    padding: 22px 28px; background: var(--off-white);
+    border-top: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  }
+  .validation-msg { font-size: 13px; color: var(--slate); font-style: italic; }
+  .validation-msg.ready { color: var(--success); font-style: normal; font-weight: 500; }
+  .btn-generate {
+    font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600;
+    background: var(--navy); color: var(--white); border: none;
+    border-radius: 4px; padding: 13px 32px; cursor: pointer;
+    letter-spacing: 0.04em; transition: all 0.15s;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .btn-generate:hover { background: var(--navy-light); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+  .btn-generate:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  /* Output */
+  .output-section { margin-top: 28px; display: none; }
+  .output-section.visible { display: block; }
+  .output-card { background: var(--white); border: 1px solid var(--border); border-radius: 6px; box-shadow: var(--shadow-md); overflow: hidden; }
+  .output-head {
+    background: var(--navy); padding: 16px 28px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .output-head-left { display: flex; flex-direction: column; gap: 3px; }
+  .output-eyebrow { font-size: 10px; font-weight: 600; color: var(--slate); letter-spacing: 0.1em; text-transform: uppercase; }
+  .output-title { font-family: 'Playfair Display', serif; font-size: 15px; color: var(--white); }
+  .btn-copy {
+    font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600;
+    background: transparent; color: var(--gold); border: 1px solid var(--gold);
+    border-radius: 3px; padding: 7px 16px; cursor: pointer;
+    letter-spacing: 0.06em; text-transform: uppercase; transition: all 0.15s;
+  }
+  .btn-copy:hover, .btn-copy.copied { background: var(--gold); color: var(--navy); }
+  .output-body {
+    padding: 26px 28px;
+    font-family: 'DM Mono', monospace; font-size: 12px; line-height: 1.8;
+    color: var(--text); white-space: pre-wrap; word-break: break-word;
+    background: var(--off-white); border-top: 1px solid var(--border);
+    max-height: 540px; overflow-y: auto;
+  }
+  .output-foot {
+    padding: 13px 28px; background: var(--white); border-top: 1px solid var(--border);
+    font-size: 12px; color: var(--slate); display: flex; align-items: center; gap: 8px;
+  }
+  .output-foot .dot { width: 6px; height: 6px; background: var(--gold); border-radius: 50%; flex-shrink: 0; }
+
+  /* No-preset state */
+  .no-preset-msg {
+    text-align: center; padding: 40px 28px;
+    font-size: 14px; color: var(--slate);
+    border: 2px dashed var(--border); border-radius: 5px;
+  }
+  .no-preset-msg strong { display: block; font-size: 15px; color: var(--text-light); margin-bottom: 6px; }
+
+  @media (max-width: 760px) {
+    .header { padding: 18px 20px; }
+    .main { padding: 24px 16px 60px; }
+    .preset-grid { grid-template-columns: repeat(2, 1fr); }
+    .tier-def-grid { grid-template-columns: 1fr; }
+    .field-row { grid-template-columns: 1fr; }
+    .archetype-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-brand">
+    <span class="title">Persona Prompt Generator</span>
+    <span class="subtitle">Journey-Anchored Customer Experience Framework</span>
+  </div>
+  <div class="header-meta">
+    <span class="version-badge">v1 · POC</span>
+    <span class="oss-badge">Open Source</span>
+  </div>
+</header>
+
+<main class="main">
+
+  <!-- ── Config ── -->
+  <div class="config-section">
+    <div class="config-header">
+      <h2>Organization Configuration</h2>
+      <span class="config-note">Select a preset or configure manually — all fields are editable</span>
+    </div>
+    <div class="config-body">
+
+      <div class="preset-grid" id="presetGrid">
+        <!-- rendered by JS -->
+      </div>
+
+      <div class="org-fields">
+        <div class="field-row">
+          <div class="field">
+            <label>Organization Name</label>
+            <input type="text" id="orgName" placeholder="Your organization name..." oninput="syncConfig()">
+          </div>
+          <div class="field">
+            <label>Primary Systems</label>
+            <input type="text" id="systems" placeholder="Core platforms used to serve customers..." oninput="syncConfig()">
+          </div>
+        </div>
+        <div class="field">
+          <label>Market &amp; Organization Description</label>
+          <textarea id="marketDesc" rows="3" placeholder="Describe your market, customer base, geographic context, and key experience drivers..." oninput="syncConfig()"></textarea>
+        </div>
+      </div>
+
+      <div class="tier-def-label">Relationship Tier Definitions</div>
+      <div class="tier-def-grid" id="tierDefGrid">
+        <!-- rendered by JS -->
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── Divider ── -->
+  <div class="section-divider">Persona Generator</div>
+
+  <!-- ── Generator ── -->
+  <div class="form-card">
+
+    <div class="step-header"><div class="step">1</div><h2>Select Archetype</h2></div>
+    <div class="step-body">
+      <div id="archetypeArea">
+        <div class="no-preset-msg">
+          <strong>No configuration loaded</strong>
+          Select a preset above or complete the configuration fields to load archetypes.
+        </div>
+      </div>
+    </div>
+
+    <div class="step-header"><div class="step">2</div><h2>Select Value Stream &amp; Journey</h2></div>
+    <div class="step-body">
+      <div class="field" style="margin-bottom:18px;">
+        <label>Value Stream</label>
+        <select id="valueStreamSelect" onchange="updateJourneys()">
+          <option value="">— Select a value stream —</option>
+        </select>
+      </div>
+      <div class="field" id="journeyFieldWrap" style="display:none;">
+        <label>Journey</label>
+        <div class="journey-pills" id="journeyPills"></div>
+        <div class="custom-journey-wrap" id="customJourneyWrap">
+          <input type="text" id="customJourneyText" placeholder="Describe a custom journey...">
+        </div>
+      </div>
+    </div>
+
+    <div class="step-header"><div class="step">3</div><h2>Specify Journey Stage</h2></div>
+    <div class="step-body">
+      <div class="field">
+        <label>Stage</label>
+        <input type="text" id="stageInput" placeholder="e.g. Application, First appointment, Renewal decision..." oninput="checkValidity()">
+        <span class="hint-text">Type a stage or click a suggestion based on your selected journey.</span>
+        <div class="stage-hints" id="stageHints"></div>
+      </div>
+    </div>
+
+    <div class="step-header"><div class="step">4</div><h2>Channel &amp; Context</h2></div>
+    <div class="step-body">
+      <div class="field-row">
+        <div class="field">
+          <label>Primary Channel</label>
+          <select id="channelSelect">
+            <option value="">— Select —</option>
+            <option>In-person / On-site</option>
+            <option>Digital — Mobile App</option>
+            <option>Digital — Web / Portal</option>
+            <option>Phone / Call Center</option>
+            <option>Dedicated Relationship Manager</option>
+            <option>Mixed / Omnichannel</option>
+            <option>Self-service Kiosk</option>
+            <option>Email</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Additional Context <span style="font-weight:300;text-transform:none;letter-spacing:0;">(optional)</span></label>
+          <textarea id="additionalContext" placeholder="Specific constraints, edge cases, or story focus..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="generate-row">
+      <span class="validation-msg" id="validationMsg">Complete steps 1–3 to generate a prompt.</span>
+      <button class="btn-generate" id="generateBtn" onclick="generatePrompt()" disabled>
+        Generate Prompt &nbsp;→
+      </button>
+    </div>
+
+  </div>
+
+  <!-- ── Output ── -->
+  <div class="output-section" id="outputSection">
+    <div class="output-card">
+      <div class="output-head">
+        <div class="output-head-left">
+          <span class="output-eyebrow">Generated Prompt</span>
+          <span class="output-title" id="outputTitle"></span>
+        </div>
+        <button class="btn-copy" id="copyBtn" onclick="copyPrompt()">Copy Prompt</button>
+      </div>
+      <div class="output-body" id="outputBody"></div>
+      <div class="output-foot">
+        <div class="dot"></div>
+        Paste this prompt into a new Claude chat to generate the situated persona.
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+// ── Preset data ─────────────────────────────────────────────────────────────
+
+const PRESETS = {
+
+  banking: {
+    id: 'banking', label: 'Community Banking', icon: '🏦',
+    sub: 'Relationship-depth model',
+    orgName: 'Lakeside Community Bank',
+    systems: 'Core banking platform, digital banking portal, fraud monitoring system, loan origination system',
+    marketDesc: 'A community bank serving a mixed rural and suburban three-county market. Average customer age is mid-to-late 50s, with a significant 70+ population representing disproportionate deposit concentration. Customers value relationship, trust, and local decision-making over rate optimization.',
+    tiers: [
+      { name: 'Solution', tagline: 'Standard needs',
+        def: 'Standard consumer and small business customers. Banking is transactional — they want it to work, be fast, and stay out of the way. Digital-first with human backup always available. Easy means fast, clear, and no-friction — with a human when it counts. Approximately 79% of customers, ~25% of deposits.' },
+      { name: 'Relationship', tagline: 'Growing needs',
+        def: 'Customer holds at least one qualifying product in wealth, business, or affluent consumer. A relationship team connects the dots across products and proactively introduces solutions. Easy means a team that knows you and makes introductions. Approximately 20% of customers, ~50% of deposits.' },
+      { name: 'Dedicated', tagline: 'Complex needs',
+        def: 'Customer holds two or more qualifying products at a meaningful balance threshold. A dedicated banker navigates complexity and knows the full picture. Easy means someone who already knows your whole picture without being re-briefed. Less than 1% of customers, more than 25% of deposits.' }
+    ],
+    archetypes: [
+      { code: 'S1', friendlyName: 'The Starter',    tierIdx: 0, age: '18–34', desc: 'First relationship, single product, low engagement' },
+      { code: 'S2', friendlyName: 'The Occasional', tierIdx: 0, age: '35–54', desc: 'Mid-life, complexity managed elsewhere' },
+      { code: 'S3', friendlyName: 'The Regular',    tierIdx: 0, age: '55–74', desc: 'Long tenure, limited products, branch and phone preferred' },
+      { code: 'R1', friendlyName: 'The Builder',    tierIdx: 1, age: '35–54', desc: 'Active household, growing product complexity' },
+      { code: 'R2', friendlyName: 'The Planner',    tierIdx: 1, age: '55–69', desc: 'Pre-retiree consolidating, advisor-seeking, high deposit depth' },
+      { code: 'R3', friendlyName: 'The Anchor',     tierIdx: 1, age: '70+',   desc: 'Established, branch-dependent, safety-sensitive' },
+      { code: 'D1', friendlyName: 'The Principal',  tierIdx: 2, age: '50+',   desc: 'Business owner or high-wealth, two or more qualifying products' }
+    ],
+    valueStreams: {
+      'Loan Value Stream': [
+        { name: 'New Consumer Loan',    stages: ['Awareness / Research','Initial Inquiry','Application','Underwriting Wait','Decision','Closing','First Payment'] },
+        { name: 'New Mortgage',         stages: ['Pre-qualification','Application','Processing','Appraisal','Underwriting','Clear to Close','Closing','Post-close Onboarding'] },
+        { name: 'New Commercial Loan',  stages: ['Relationship Introduction','Needs Assessment','Application','Credit Review','Approval','Documentation','Funding'] },
+        { name: 'Loan Renewal',         stages: ['Renewal Notice','Review','Negotiation','Documentation','Execution'] },
+        { name: 'Loan Modification',    stages: ['Hardship Recognition','Inquiry','Application','Review','Decision','Execution'] },
+        { name: 'Loan Payoff',          stages: ['Payoff Request','Quote Received','Final Payment','Lien Release','Account Closure'] }
+      ],
+      'Deposit & Savings Value Stream': [
+        { name: 'New Checking Account', stages: ['Trigger Event','Channel Selection','Application','Identity Verification','Account Opening','First Deposit','Early Engagement'] },
+        { name: 'New Savings Account',  stages: ['Trigger Event','Inquiry','Application','Funding','Goal Setup','Early Engagement'] },
+        { name: 'New CD',               stages: ['Rate Research','Inquiry','Term Selection','Funding','Confirmation','Maturity Planning'] },
+        { name: 'Account Closure',      stages: ['Closure Intent','Intervention Opportunity','Balance Transfer','Final Confirmation','Post-closure'] },
+        { name: 'Beneficiary Update',   stages: ['Life Event Trigger','Request Initiation','Documentation','Verification','Confirmation'] }
+      ],
+      'Account Servicing Value Stream': [
+        { name: 'General Service Request',  stages: ['Problem Recognition','Channel Entry','Request Submission','Resolution','Follow-up'] },
+        { name: 'Dispute / Error Correction', stages: ['Error Discovery','Dispute Filing','Investigation','Resolution','Recovery'] },
+        { name: 'Fraud Activity',           stages: ['Alert or Discovery','Reporting','Account Action','Investigation','Resolution','Trust Recovery'] },
+        { name: 'Account Maintenance',      stages: ['Change Trigger','Request','Verification','Update','Confirmation'] },
+        { name: 'Deceased Account Handling',stages: ['Notification','Documentation','Estate Review','Asset Distribution','Account Closure'] }
+      ],
+      'Money Movement Value Stream': [
+        { name: 'Internal Transfer', stages: ['Initiation','Confirmation','Execution','Verification'] },
+        { name: 'ACH Transfer',      stages: ['Initiation','Account Linking','Scheduling','Execution','Confirmation'] },
+        { name: 'Wire Transfer',     stages: ['Request','Verification','Authorization','Execution','Confirmation'] },
+        { name: 'RTP / FedNow',      stages: ['Payment Trigger','Recipient Entry','Verification','Real-time Execution','Receipt Confirmation'] },
+        { name: 'Mobile Deposit',    stages: ['Check Receipt','App Launch','Capture','Submission','Hold Notice','Funds Availability'] },
+        { name: 'Bill Pay',          stages: ['Payee Setup','Payment Scheduling','Authorization','Execution','Confirmation'] }
+      ]
+    }
+  },
+
+  healthcare: {
+    id: 'healthcare', label: 'Regional Healthcare', icon: '🏥',
+    sub: 'Care-complexity model',
+    orgName: 'Valley Regional Health',
+    systems: 'EHR / patient record system, patient portal, scheduling platform, billing system, telehealth platform',
+    marketDesc: 'A regional health system serving a mixed urban and suburban market. Patient population spans all ages, with growing chronic disease burden in the 55+ cohort. Patients navigate multiple care settings, providers, and payers. Trust, clarity, and continuity of care are primary experience drivers.',
+    tiers: [
+      { name: 'Episodic', tagline: 'Infrequent, reactive',
+        def: 'Patient interacts with the health system infrequently and reactively — urgent care, annual visits, or acute episodes. Minimal ongoing care relationship. Easy means getting in quickly, being treated clearly, and leaving with no confusion about next steps or bills.' },
+      { name: 'Ongoing', tagline: 'Regular, managed',
+        def: 'Patient has a continuing care relationship — managing a condition, navigating a life stage, or engaged in preventive care. Interacts regularly with one or more providers. Easy means a care team that knows my history, coordinates for me, and anticipates my needs.' },
+      { name: 'Complex Care', tagline: 'Multi-provider, high-touch',
+        def: 'Patient has multiple conditions, multiple providers, or significant care coordination needs — often involving caregivers or care navigators. Easy means someone who holds the whole picture, navigates complexity on my behalf, and ensures nothing falls through the cracks.' }
+    ],
+    archetypes: [
+      { code: 'EP1', friendlyName: 'The Healthy Adult', tierIdx: 0, age: '18–39', desc: 'Infrequent visitor, minimal health engagement, seeks convenience' },
+      { code: 'EP2', friendlyName: 'The Parent',         tierIdx: 0, age: '28–45', desc: 'Primary care navigator for family, episodic but frequent for dependents' },
+      { code: 'ON1', friendlyName: 'The Manager',        tierIdx: 1, age: '40–64', desc: 'Managing a chronic condition, self-directed, digitally capable' },
+      { code: 'ON2', friendlyName: 'The Supported',      tierIdx: 1, age: '55–74', desc: 'Ongoing care, relies on provider guidance, mixed digital comfort' },
+      { code: 'CX1', friendlyName: 'The Coordinator',    tierIdx: 2, age: '40–65', desc: 'Caregiver or patient with multi-provider complexity, high navigational burden' },
+      { code: 'CX2', friendlyName: 'The Elder',          tierIdx: 2, age: '75+',   desc: 'Aging patient, high-touch, dependent on care navigation support' }
+    ],
+    valueStreams: {
+      'Care Access Value Stream': [
+        { name: 'Appointment Scheduling', stages: ['Need Recognition','Provider Search','Scheduling','Reminder & Prep','Check-in','Post-visit Follow-up'] },
+        { name: 'New Patient Onboarding', stages: ['Referral or Self-referral','Registration','Insurance Verification','First Appointment','Care Plan Introduction'] },
+        { name: 'Referral to Specialist', stages: ['Referral Initiation','Authorization','Specialist Scheduling','Record Transfer','Specialist Visit','Care Coordination'] },
+        { name: 'Urgent Care Visit',      stages: ['Symptom Onset','Channel Selection','Arrival / Check-in','Treatment','Discharge Instructions','Follow-up'] },
+        { name: 'Telehealth Visit',       stages: ['Scheduling','Pre-visit Prep','Connection','Consultation','Follow-up / Prescription'] }
+      ],
+      'Care Delivery Value Stream': [
+        { name: 'Primary Care Visit',       stages: ['Pre-visit Prep','Arrival','Intake','Exam','Care Plan Discussion','Checkout','Follow-up'] },
+        { name: 'Specialist Consultation',  stages: ['Referral Receipt','Scheduling','Pre-visit','Consultation','Recommendation','Care Coordination'] },
+        { name: 'Procedure or Surgery',     stages: ['Pre-authorization','Pre-op Prep','Day of Procedure','Recovery','Discharge','Post-op Follow-up'] },
+        { name: 'Prescription Management',  stages: ['Prescription Issued','Pharmacy Routing','Fill / Pickup','Adherence Monitoring','Renewal'] },
+        { name: 'Lab & Imaging',            stages: ['Order Placed','Scheduling','Collection','Results Delivery','Care Team Review','Patient Notification'] }
+      ],
+      'Care Management Value Stream': [
+        { name: 'Chronic Disease Management', stages: ['Diagnosis','Care Plan Development','Active Management','Monitoring','Adjustment','Long-term Maintenance'] },
+        { name: 'Preventive Care',            stages: ['Outreach','Scheduling','Screening','Results Discussion','Behavioral Guidance','Follow-up'] },
+        { name: 'Care Transitions',           stages: ['Discharge Planning','Handoff','Post-discharge Contact','Follow-up Appointment','Medication Reconciliation'] },
+        { name: 'Care Plan Review',           stages: ['Review Trigger','Data Gathering','Patient Consultation','Plan Adjustment','Goal Setting','Monitoring'] }
+      ],
+      'Billing & Administration Value Stream': [
+        { name: 'Bill Payment',           stages: ['Bill Receipt','Review','Question / Dispute','Payment','Confirmation'] },
+        { name: 'Insurance Verification', stages: ['Coverage Inquiry','Verification','Benefit Explanation','Prior Auth if Needed','Patient Confirmation'] },
+        { name: 'Medical Records Request',stages: ['Request Initiation','Authorization','Processing','Delivery','Confirmation'] },
+        { name: 'Grievance or Appeal',    stages: ['Issue Recognition','Filing','Review','Decision','Resolution'] }
+      ]
+    }
+  },
+
+  saas: {
+    id: 'saas', label: 'B2B SaaS', icon: '💻',
+    sub: 'Deployment-depth model',
+    orgName: 'Meridian Platform',
+    systems: 'Product platform, CRM, customer success platform, support ticketing system, analytics dashboard, billing system',
+    marketDesc: 'A B2B SaaS platform serving teams and organizations across multiple industries. Buyers range from individual practitioners to enterprise procurement. Key experience drivers are time-to-value, integration ease, and demonstrable ROI. Churn risk is highest in the first 90 days and at renewal.',
+    tiers: [
+      { name: 'Starter', tagline: 'Individual or small team',
+        def: 'Individual user or small team. Limited feature depth, self-service onboarding, and low organizational investment. Easy means getting started without needing IT, a lengthy implementation, or a sales process.' },
+      { name: 'Growth', tagline: 'Team or department',
+        def: 'Team or department-level deployment with an internal champion driving adoption. Customization, integration, and internal workflow fit matter. Easy means tools that work the way our team works, with responsive support when we hit a wall.' },
+      { name: 'Enterprise', tagline: 'Org-wide, strategic',
+        def: 'Organization-wide deployment with procurement, security, compliance, and executive ROI accountability. A dedicated success team manages the relationship. Easy means a partner who understands our business outcomes and delivers against them — not just a product.' }
+    ],
+    archetypes: [
+      { code: 'ST1', friendlyName: 'The Explorer',    tierIdx: 0, age: 'Early Career',  desc: 'Individual trial user, evaluating fit, low organizational commitment' },
+      { code: 'ST2', friendlyName: 'The Daily User',  tierIdx: 0, age: 'Mid Career',    desc: 'Active individual, single-function focus, embedded in personal workflow' },
+      { code: 'GR1', friendlyName: 'The Champion',    tierIdx: 1, age: 'Mid Career',    desc: 'Internal advocate, drives team adoption, bridges product and colleagues' },
+      { code: 'GR2', friendlyName: 'The Admin',       tierIdx: 1, age: 'Mid Career',    desc: 'Manages access, configuration, and team rollout — owns the account operationally' },
+      { code: 'EN1', friendlyName: 'The Buyer',       tierIdx: 2, age: 'Senior',        desc: 'Executive sponsor, business-outcome focused, manages vendor relationship strategically' },
+      { code: 'EN2', friendlyName: 'The Integrator',  tierIdx: 2, age: 'Mid–Senior',    desc: 'Technical lead, owns systems integration and security compliance' }
+    ],
+    valueStreams: {
+      'Acquisition Value Stream': [
+        { name: 'Free Trial',             stages: ['Sign-up','Initial Setup','First Feature Use','Value Discovery','Trial End / Conversion Decision'] },
+        { name: 'Demo Request',           stages: ['Interest Signal','Demo Scheduling','Demo Delivery','Follow-up','Proposal','Decision'] },
+        { name: 'Competitive Evaluation', stages: ['Shortlist Formation','Requirements Definition','Vendor Review','POC / Trial','Reference Check','Decision'] },
+        { name: 'Pricing Inquiry',        stages: ['Trigger','Discovery Call','Proposal','Negotiation','Close'] }
+      ],
+      'Onboarding Value Stream': [
+        { name: 'Account Setup',          stages: ['Contract Signed','Provisioning','Admin Configuration','SSO / Integration Setup','Handoff to Success'] },
+        { name: 'Team Invitation',        stages: ['Admin Initiates','Invites Sent','User Acceptance','First Login','Initial Orientation'] },
+        { name: 'First Value Moment',     stages: ['Onboarding Complete','Core Use Case Activated','First Output Delivered','Value Confirmed'] },
+        { name: 'Integration Configuration', stages: ['Integration Scoped','Technical Setup','Testing','Go-live','Monitoring'] }
+      ],
+      'Adoption Value Stream': [
+        { name: 'Feature Discovery',        stages: ['Awareness','Trial','Adoption','Habit Formation','Advocacy'] },
+        { name: 'Power User Development',   stages: ['Identification','Advanced Training','Customization','Internal Enablement','Champion Activation'] },
+        { name: 'Team Expansion',           stages: ['Growth Trigger','Seat Request','Provisioning','New User Onboarding','Adoption Monitoring'] },
+        { name: 'Workflow Integration',     stages: ['Pain Point Identified','Solution Design','Configuration','Testing','Rollout','Adoption Review'] }
+      ],
+      'Renewal & Expansion Value Stream': [
+        { name: 'Renewal',           stages: ['Renewal Window Opens','Usage Review','Business Review Meeting','Negotiation','Contract Execution'] },
+        { name: 'Tier Upgrade',      stages: ['Trigger / Recommendation','Use Case Review','Proposal','Decision','Migration','Onboarding to New Tier'] },
+        { name: 'Seat Expansion',    stages: ['Growth Trigger','Request','Approval','Provisioning','New User Onboarding'] },
+        { name: 'New Module Adoption', stages: ['Recommendation','Demo','Trial','Decision','Implementation','Adoption'] }
+      ],
+      'Support Value Stream': [
+        { name: 'Bug Report',          stages: ['Issue Discovery','Report Submission','Triage','Investigation','Resolution','Confirmation'] },
+        { name: 'Feature Request',     stages: ['Need Identified','Request Submission','Product Review','Roadmap Decision','Communication Back'] },
+        { name: 'Technical Escalation',stages: ['Blocker Identified','Escalation','Engineering Engagement','Resolution','Root Cause Review'] },
+        { name: 'Account Review',      stages: ['Scheduled Review','Usage Analysis','Goal Assessment','Recommendations','Action Plan'] }
+      ]
+    }
+  },
+
+  retail: {
+    id: 'retail', label: 'Specialty Retail', icon: '🛍️',
+    sub: 'Engagement-depth model',
+    orgName: 'Trailhead Outfitters',
+    systems: 'POS system, e-commerce platform, inventory management, loyalty program platform, customer service platform',
+    marketDesc: 'A specialty retail brand serving customers across a spectrum of engagement — from gift buyers with no domain knowledge to professional practitioners with expert expectations. In-store expertise and curated product selection are primary differentiators. Community and shared passion are loyalty drivers.',
+    tiers: [
+      { name: 'Casual', tagline: 'Occasional, task-driven',
+        def: 'Infrequent shopper purchasing for a specific occasion, often as a gift, or with low personal domain knowledge. Seeking guidance and confidence. Easy means finding what I need quickly, trusting it is right, and completing the purchase without friction.' },
+      { name: 'Enthusiast', tagline: 'Regular, knowledgeable',
+        def: 'Regular customer with meaningful domain knowledge and personal investment in the category. Shops with intent, values staff expertise, and is connected to the broader community. Easy means staff who know their stuff, products I can trust, and being treated as someone who knows what they want.' },
+      { name: 'Pro', tagline: 'Expert, high-expectation',
+        def: 'Professional practitioner or expert user with maximum product expectations and deep category knowledge. Values access, customization, and peer-level recognition. Easy means being treated as a peer — not a customer — with access that reflects the relationship.' }
+    ],
+    archetypes: [
+      { code: 'CA1', friendlyName: 'The Gifter',   tierIdx: 0, age: 'Any',   desc: 'Purchasing for someone else, low domain knowledge, needs guidance' },
+      { code: 'CA2', friendlyName: 'The Dabbler',  tierIdx: 0, age: '25–45', desc: 'New to the activity, exploring, low commitment, value-sensitive' },
+      { code: 'EN1', friendlyName: 'The Hobbyist', tierIdx: 1, age: '30–55', desc: 'Regular participant, product-knowledgeable, community-engaged' },
+      { code: 'EN2', friendlyName: 'The Devotee',  tierIdx: 1, age: '35–60', desc: 'Serious investment in the activity, high product expectations, loyal' },
+      { code: 'PR1', friendlyName: 'The Pro',      tierIdx: 2, age: '28–55', desc: 'Professional or expert user, peak performance expectations, reputation-aware' }
+    ],
+    valueStreams: {
+      'Discovery & Research Value Stream': [
+        { name: 'Product Research',          stages: ['Need Recognition','Category Exploration','Comparison','Expert Consultation','Decision'] },
+        { name: 'Gift Purchase Research',    stages: ['Occasion Trigger','Category Entry','Guided Discovery','Selection','Purchase'] },
+        { name: 'New Activity Exploration',  stages: ['Interest Trigger','Beginner Research','Starter Kit Discovery','Expert Advice','First Purchase'] }
+      ],
+      'Purchase Value Stream': [
+        { name: 'In-store Purchase',     stages: ['Arrival','Browse / Assist','Product Selection','Transaction','Departure'] },
+        { name: 'Online Order',          stages: ['Site Entry','Product Discovery','Selection','Cart','Checkout','Confirmation','Fulfillment'] },
+        { name: 'Custom / Special Order',stages: ['Consultation','Spec Definition','Quote','Order Placement','Production','Delivery'] },
+        { name: 'High-value Purchase',   stages: ['Research Phase','In-store Consultation','Demo / Trial','Decision','Transaction','Post-purchase Support'] }
+      ],
+      'Post-purchase Value Stream': [
+        { name: 'Product Onboarding',  stages: ['Unboxing','Setup','First Use','Skill Development','Confidence Building'] },
+        { name: 'Return or Exchange',  stages: ['Issue Recognition','Return Initiation','Assessment','Resolution','Re-engagement'] },
+        { name: 'Repair or Maintenance',stages: ['Damage or Wear','Service Inquiry','Assessment','Repair','Return','Follow-up'] }
+      ],
+      'Loyalty & Community Value Stream': [
+        { name: 'Loyalty Enrollment',  stages: ['Trigger','Program Introduction','Sign-up','First Reward','Habit Formation'] },
+        { name: 'Repeat Purchase',     stages: ['Return Trigger','Re-engagement','Product Update','Purchase','Recognition'] },
+        { name: 'Event or Workshop',   stages: ['Awareness','Registration','Participation','Follow-up','Community Connection'] },
+        { name: 'Referral',            stages: ['Satisfaction Moment','Referral Prompt','Peer Introduction','New Customer Journey','Advocate Recognition'] }
+      ]
+    }
+  }
+
+};
+
+// ── State ────────────────────────────────────────────────────────────────────
+
+let currentConfig = null;
+let activePresetId = null;
+let selectedArchetype = null;
+let selectedJourney = null;
+let currentStages = [];
+let currentJourneyList = [];
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+
+function init() {
+  renderPresets();
+}
+
+function renderPresets() {
+  const grid = document.getElementById('presetGrid');
+  grid.innerHTML = Object.values(PRESETS).map(p => `
+    <div class="preset-card" id="preset-${p.id}" onclick="loadPreset('${p.id}')">
+      <span class="preset-icon">${p.icon}</span>
+      <span class="preset-label">${p.label}</span>
+      <span class="preset-sub">${p.sub}</span>
+    </div>
+  `).join('');
+}
+
+function loadPreset(id) {
+  const preset = PRESETS[id];
+  activePresetId = id;
+  currentConfig = JSON.parse(JSON.stringify(preset)); // deep copy
+
+  // Highlight preset card
+  document.querySelectorAll('.preset-card').forEach(c => c.classList.remove('active'));
+  document.getElementById('preset-' + id).classList.add('active');
+
+  // Populate config fields
+  document.getElementById('orgName').value = preset.orgName;
+  document.getElementById('systems').value = preset.systems;
+  document.getElementById('marketDesc').value = preset.marketDesc;
+
+  // Render tier def cards
+  renderTierDefs();
+
+  // Reset generator
+  selectedArchetype = null;
+  selectedJourney = null;
+  currentStages = [];
+
+  // Render archetypes
+  renderArchetypes();
+
+  // Populate value stream dropdown
+  populateValueStreams();
+
+  // Reset journey/stage
+  document.getElementById('journeyFieldWrap').style.display = 'none';
+  document.getElementById('journeyPills').innerHTML = '';
+  document.getElementById('stageInput').value = '';
+  document.getElementById('stageHints').innerHTML = '';
+  document.getElementById('outputSection').classList.remove('visible');
+
+  checkValidity();
+}
+
+function renderTierDefs() {
+  const grid = document.getElementById('tierDefGrid');
+  grid.innerHTML = currentConfig.tiers.map((t, i) => `
+    <div class="tier-def-card">
+      <div class="tier-def-head t${i}">
+        <input class="tier-name-input t${i}" type="text" value="${t.name}"
+          oninput="currentConfig.tiers[${i}].name = this.value; refreshArchetypes()">
+      </div>
+      <div class="tier-def-body">
+        <textarea rows="4" oninput="currentConfig.tiers[${i}].def = this.value">${t.def}</textarea>
+      </div>
+    </div>
+  `).join('');
+}
+
+function syncConfig() {
+  if (!currentConfig) return;
+  currentConfig.orgName = document.getElementById('orgName').value;
+  currentConfig.systems = document.getElementById('systems').value;
+  currentConfig.marketDesc = document.getElementById('marketDesc').value;
+}
+
+function renderArchetypes() {
+  const area = document.getElementById('archetypeArea');
+  if (!currentConfig) {
+    area.innerHTML = `<div class="no-preset-msg"><strong>No configuration loaded</strong>Select a preset above or complete the configuration fields to load archetypes.</div>`;
+    return;
+  }
+  area.innerHTML = `<div class="archetype-grid">${currentConfig.archetypes.map(a => {
+    const tier = currentConfig.tiers[a.tierIdx];
+    const badgeClass = ['t0-badge','t1-badge','t2-badge'][a.tierIdx] || 't0-badge';
+    return `
+      <label class="archetype-card" id="card-${a.code}" onclick="selectArchetype('${a.code}')">
+        <input type="radio" name="archetype" value="${a.code}">
+        <span class="arch-code">${a.code}</span>
+        <span class="arch-tier-badge ${badgeClass}">${tier ? tier.name : ''}</span>
+        <span class="arch-friendly">${a.friendlyName}</span>
+        <span class="arch-age">${a.age}</span>
+        <span class="arch-desc">${a.desc}</span>
+      </label>
+    `;
+  }).join('')}</div>`;
+}
+
+function refreshArchetypes() {
+  // Re-render to pick up tier name changes
+  if (selectedArchetype) {
+    renderArchetypes();
+    const card = document.getElementById('card-' + selectedArchetype);
+    if (card) card.classList.add('selected');
+  }
+}
+
+function selectArchetype(code) {
+  selectedArchetype = code;
+  document.querySelectorAll('.archetype-card').forEach(c => c.classList.remove('selected'));
+  const card = document.getElementById('card-' + code);
+  if (card) card.classList.add('selected');
+  checkValidity();
+}
+
+function populateValueStreams() {
+  const sel = document.getElementById('valueStreamSelect');
+  sel.innerHTML = '<option value="">— Select a value stream —</option>';
+  if (!currentConfig) return;
+  Object.keys(currentConfig.valueStreams).forEach(vs => {
+    const opt = document.createElement('option');
+    opt.value = vs;
+    opt.textContent = vs;
+    sel.appendChild(opt);
+  });
+}
+
+function updateJourneys() {
+  const vs = document.getElementById('valueStreamSelect').value;
+  const wrap = document.getElementById('journeyFieldWrap');
+  const pillsEl = document.getElementById('journeyPills');
+  const stageInput = document.getElementById('stageInput');
+
+  selectedJourney = null;
+  currentStages = [];
+  stageInput.value = '';
+  document.getElementById('stageHints').innerHTML = '';
+  document.getElementById('customJourneyWrap').classList.remove('visible');
+
+  if (!vs || !currentConfig) { wrap.style.display = 'none'; checkValidity(); return; }
+
+  wrap.style.display = 'flex';
+  const journeys = currentConfig.valueStreams[vs] || [];
+  currentJourneyList = journeys;
+
+  pillsEl.innerHTML = journeys.map((j, idx) => `
+    <div class="journey-pill" onclick="selectJourney(this, ${idx})">${j.name}</div>
+  `).join('') + `<div class="journey-pill custom-pill" onclick="selectCustomJourney(this)">+ Custom</div>`;
+
+  checkValidity();
+}
+
+function selectJourney(el, idx) {
+  const j = currentJourneyList[idx];
+  if (!j) return;
+  document.querySelectorAll('.journey-pill').forEach(p => p.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedJourney = j.name;
+  currentStages = j.stages;
+  document.getElementById('customJourneyWrap').classList.remove('visible');
+
+  // Stage hints
+  const hintsEl = document.getElementById('stageHints');
+  hintsEl.innerHTML = currentStages.map((s, idx) =>
+    `<div class="stage-hint" onclick="selectStage(${idx})">${s}</div>`
+  ).join('');
+
+  checkValidity();
+}
+
+function selectCustomJourney(el) {
+  document.querySelectorAll('.journey-pill').forEach(p => p.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedJourney = null;
+  currentStages = [];
+  document.getElementById('stageHints').innerHTML = '';
+  const wrap = document.getElementById('customJourneyWrap');
+  wrap.classList.add('visible');
+  const inp = document.getElementById('customJourneyText');
+  inp.value = '';
+  inp.focus();
+  inp.oninput = function() { selectedJourney = this.value.trim() || null; checkValidity(); };
+  checkValidity();
+}
+
+function selectStage(idx) {
+  document.getElementById('stageInput').value = currentStages[idx] || '';
+  checkValidity();
+}
+
+function checkValidity() {
+  const archOk = !!selectedArchetype;
+  const journeyOk = !!selectedJourney;
+  const stageOk = document.getElementById('stageInput').value.trim().length > 0;
+  const btn = document.getElementById('generateBtn');
+  const msg = document.getElementById('validationMsg');
+
+  if (archOk && journeyOk && stageOk) {
+    btn.disabled = false;
+    msg.textContent = 'Ready to generate.';
+    msg.className = 'validation-msg ready';
+  } else {
+    btn.disabled = true;
+    const missing = [];
+    if (!archOk) missing.push('archetype');
+    if (!journeyOk) missing.push('journey');
+    if (!stageOk) missing.push('stage');
+    msg.textContent = 'Still needed: ' + missing.join(', ') + '.';
+    msg.className = 'validation-msg';
+  }
+}
+
+// ── Prompt builder ────────────────────────────────────────────────────────────
+
+function generatePrompt() {
+  syncConfig();
+  const arch = currentConfig.archetypes.find(a => a.code === selectedArchetype);
+  const tier = currentConfig.tiers[arch.tierIdx];
+  const stage = document.getElementById('stageInput').value.trim();
+  const channel = document.getElementById('channelSelect').value || 'Unspecified';
+  const context = document.getElementById('additionalContext').value.trim();
+  const vsName = document.getElementById('valueStreamSelect').value;
+
+  const allTiers = currentConfig.tiers.map((t, i) =>
+    `${i + 1}. ${t.name} (${currentConfig.tiers[i].tagline || ''}): ${t.def}`
+  ).join('\n\n');
+
+  const prompt =
+`You are helping ${currentConfig.orgName || 'an organization'} — ${currentConfig.marketDesc} — develop user stories for a product and experience team.
+
+Your task is to generate a SITUATED PERSONA for the following context:
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ARCHETYPE: ${arch.code} — ${arch.friendlyName}
+RELATIONSHIP TIER: ${tier.name}${tier.tagline ? ' (' + tier.tagline + ')' : ''}
+AGE / CAREER STAGE: ${arch.age}
+ARCHETYPE DESCRIPTION: ${arch.desc}
+
+TIER CONTEXT:
+${tier.def}
+
+ALL TIERS (for context):
+${allTiers}
+
+VALUE STREAM: ${vsName}
+JOURNEY: ${selectedJourney}
+STAGE: ${stage}
+CHANNEL: ${channel}
+PRIMARY SYSTEMS: ${currentConfig.systems}
+${context ? 'ADDITIONAL CONTEXT: ' + context : ''}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Generate a situated persona using EXACTLY this structure:
+
+---
+
+IDENTITY LAYER
+• Archetype: [code, friendly name, and tier]
+• Age / Career Stage: [specific detail within the stated range, plus a one-sentence context]
+• Household or Organizational Role: [relevant to this journey]
+• Relationship depth: [1–2 sentences describing their current relationship with ${currentConfig.orgName || 'this organization'}]
+
+JOURNEY CONTEXT
+• Journey: [journey name]
+• Stage: [stage name and one sentence describing what is happening at this exact moment]
+• Channel: [channel and why they are using it at this stage]
+• Trigger: [what caused this customer to arrive at this stage]
+
+BEHAVIORAL & MOTIVATIONAL LAYER
+• What they are trying to accomplish: [specific goal at this stage — not generic]
+• How they make decisions: [deliberate, spontaneous, advice-seeking, etc. — be specific]
+• Who or what they trust: [people, channels, signals they rely on]
+• What "easy" means to them at this tier and stage: [concrete and specific, not a generic platitude]
+• What success feels like: [emotional and practical outcome they are hoping for]
+
+FRICTION MAP
+• Most likely point of stall or failure: [specific to this archetype, journey, and stage]
+• What a bad outcome looks like: [concrete, from the customer's perspective]
+• What a good outcome looks like: [concrete, from the customer's perspective]
+• Downstream risk if friction is not resolved: [business impact for ${currentConfig.orgName || 'the organization'}]
+
+STORY-READY OUTPUT
+Write a short narrative paragraph (3–5 sentences) describing this person at this exact moment in plain language. Write it as if you are reading it aloud to a product or experience team before a sprint planning session. No jargon. Ground it in the specific market context: ${currentConfig.marketDesc}
+
+Then provide 3 user story starters in this exact format:
+• As a [description], I want to [action] so that [outcome].
+• As a [description], I want to [action] so that [outcome].
+• As a [description], I want to [action] so that [outcome].
+
+---
+
+Important constraints:
+- Ground the persona in the specific market context described above. Do not apply generic or urban-default assumptions.
+- Do not invent system capabilities beyond what is described here: ${currentConfig.systems}
+- Keep language plain and direct. This output will be used by a team to write backlog items — not for marketing.
+- The narrative paragraph should feel like a real person in a real moment, not a demographic profile.
+- User story starters should be immediately usable as the opening line of a backlog item.`;
+
+  document.getElementById('outputTitle').textContent =
+    `${arch.code} · ${arch.friendlyName} · ${selectedJourney} · ${stage}`;
+  document.getElementById('outputBody').textContent = prompt;
+  document.getElementById('outputSection').classList.add('visible');
+  document.getElementById('copyBtn').textContent = 'Copy Prompt';
+  document.getElementById('copyBtn').classList.remove('copied');
+
+  setTimeout(() => {
+    document.getElementById('outputSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 100);
+}
+
+function copyPrompt() {
+  const text = document.getElementById('outputBody').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = 'Copied ✓';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy Prompt'; btn.classList.remove('copied'); }, 2500);
+  });
+}
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+init();
+</script>
+
+</body>
+</html>
