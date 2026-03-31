@@ -1,6 +1,5 @@
 # journey-persona-tool
 A journey-anchored customer persona prompt generator for product and experience teams
-# Journey Persona Tool
 
 A lightweight, single-file tool for generating structured customer persona prompts anchored to specific journeys, stages, and relationship tiers. Designed for product and experience teams who write user stories.
 
